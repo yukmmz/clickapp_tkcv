@@ -142,10 +142,12 @@ class ClickGUI:
 		nav_frame.pack()
 		tk.Button(nav_frame, text='Prev (←, Z)', command=self.prev_frame).pack(side='left')
 		tk.Button(nav_frame, text='Next (→, X)', command=self.next_frame).pack(side='left')
+		# Jump button between Next and frame label
+		tk.Button(nav_frame, text='Jump (j)', command=self.jump_dialog).pack(side='left', padx=(6, 0))
+		# frame counter label to the right of Next/Jump
+		self.frame_label = tk.Label(nav_frame, text='Frame: 0/0')
+		self.frame_label.pack(side='left', padx=8)
 
-		# frame counter label right below the plot
-		self.frame_label = tk.Label(self.master, text='Frame: 0/0')
-		self.frame_label.pack()
 
 		# state
 		self.cap = None
@@ -173,6 +175,7 @@ class ClickGUI:
 		self.master.bind('<a>', lambda e: self.enter_add_mode())
 		self.master.bind('<d>', lambda e: self.enter_del_mode())
 		self.master.bind('<c>', lambda e: self.enter_calib_mode())
+		self.master.bind('<j>', lambda e: self.jump_dialog())
 		self.master.bind('<Control-s>', lambda e: self.save())
 		self.master.bind('<Control-o>', lambda e: self.open_file())
 		self.master.bind('<e>', lambda e: self.open_settings())
@@ -500,6 +503,26 @@ class ClickGUI:
 		self.current_frame_idx = min(self.frame_count - 1, self.current_frame_idx + 1)
 		self.show_frame(self.current_frame_idx, log_flag=True)
 
+	def jump_dialog(self):
+		"""Ask user for a frame number and jump to it if valid."""
+		if self.frame_count == 0:
+			messagebox.showwarning('No video', 'No video loaded to jump within')
+			return
+		ans = simpledialog.askstring('Jump', f'Enter frame number (1-{self.frame_count}):', parent=self.master)
+		if ans is None:
+			return
+		try:
+			n = int(ans)
+		except Exception:
+			messagebox.showerror('Error', 'Invalid frame number')
+			return
+		if n < 1 or n > self.frame_count:
+			messagebox.showwarning('Out of range', f'Frame must be between 1 and {self.frame_count}')
+			return
+		# convert to 0-based index and jump
+		self.current_frame_idx = n - 1
+		self.show_frame(self.current_frame_idx, log_flag=True)
+
 	def save(self):
 		path = filedialog.asksaveasfilename(defaultextension='.mat', filetypes=[('MAT', '*.mat')])
 		if not path:
@@ -518,6 +541,7 @@ class ClickGUI:
 			'- Add (a): click to add points; real coords computed if calibrated.\n'
 			'- Del (d): click near a point to delete it.\n'
 			'- Prev/Next (←/→ or Z/X): navigate frames.\n'
+			'- Jump (j): enter frame number to jump to.\n'
 			'- Settings (E): open settings dialog to adjust colors and sizes.\n'
 			'- Save (Ctrl+S): save coords to .mat (requires scipy) or .npz fallback.\n'
 		)
