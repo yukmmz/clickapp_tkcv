@@ -6,6 +6,7 @@ cd "$(dirname "$0")"
 
 # 仮想環境内のpythonを直接指定して実行
 # Windowsの Scripts フォルダではなく、Macでは bin フォルダになります
+echo "Running main.py using the virtual environment's Python..."
 ./.venv/bin/python main.py
 
 # --- Pause機能の再現 ---

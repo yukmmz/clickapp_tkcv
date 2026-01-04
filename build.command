@@ -14,3 +14,6 @@ echo "Checking and installing libraries..."
 
 # mac/linuxでは 'Scripts' ではなく 'bin' ディレクトリになります
 ./.venv/bin/python -m pip install -r requirements.txt
+
+echo "Press Enter to close..."
+read
