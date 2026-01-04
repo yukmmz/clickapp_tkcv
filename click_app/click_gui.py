@@ -76,8 +76,8 @@ class ClickGUI:
 
 	CALIB_POINT_COLOR = (0, 255, 0)  # BGR for OpenCV
 	DATA_POINT_COLOR = (255, 0, 0)
-	CALIB_POINT_RADIUS = 6
-	DATA_POINT_RADIUS = 5
+	CALIB_POINT_RADIUS = 4
+	DATA_POINT_RADIUS = 4
 	SHOW_CALIB_POINT = True
 	def __init__(self, master=None, video_path=None):
 		self.master = master or tk.Tk()
@@ -117,9 +117,18 @@ class ClickGUI:
 		self.btn_del.pack(side='left')
 
 		# image display
-		self.canvas = tk.Label(self.master)
-		self.canvas.pack()
+		# Label ではなく Canvas を使用し、ウィンドウ追従するように設定
+		self.canvas = tk.Canvas(self.master, bg="white")
+		self.canvas.pack(fill=tk.BOTH, expand=True) # expand=Trueで広がるようにする
 		self.canvas.bind('<Button-1>', self.on_canvas_click)
+		self.canvas.bind('<Configure>', self.on_resize) # リサイズ検知
+
+		# 座標変換・リサイズ用の変数
+		self.scale = 1.0
+		self.offset_x = 0
+		self.offset_y = 0
+		self.canvas_w = 640 # 初期値
+		self.canvas_h = 480 # 初期値
 
 		# navigation buttons under the plot
 		nav_frame = tk.Frame(self.master)
@@ -163,6 +172,16 @@ class ClickGUI:
 
 		if video_path:
 			self.load_video(video_path)
+	
+	
+	def on_resize(self, event):
+		"""ウィンドウサイズが変わったときに呼ばれる"""
+		self.canvas_w = event.width
+		self.canvas_h = event.height
+		# 動画が読み込み済みなら再描画してサイズを合わせる
+		if self.cap and self.current_image is not None:
+			self.show_frame(self.current_frame_idx, log_flag=False)
+
 
 	def log(self, msg):
 		self.log_text.insert('end', msg + '\n')
@@ -202,6 +221,7 @@ class ClickGUI:
 			return None
 		return frame
 
+	
 	def show_frame(self, idx, log_flag=False):
 		frame = self.read_frame(idx)
 		if frame is None:
@@ -209,19 +229,47 @@ class ClickGUI:
 			return
 		self.current_image = frame.copy()
 		disp = frame.copy()
-		# draw overlays
+		
+		# draw overlays (元の解像度の画像に円を描く)
 		self.draw_overlays(disp, idx)
-		disp = cv2.cvtColor(disp, cv2.COLOR_BGR2RGB)
-		img = Image.fromarray(disp)
+		
+		# --- ここからリサイズ処理 ---
+		vid_h, vid_w = disp.shape[:2]
+		
+		# キャンバスサイズに合わせてスケールを計算（アスペクト比維持）
+		if self.canvas_w > 1 and self.canvas_h > 1:
+			scale_w = self.canvas_w / vid_w
+			scale_h = self.canvas_h / vid_h
+			self.scale = min(scale_w, scale_h)
+		else:
+			self.scale = 1.0
+
+		new_w = int(vid_w * self.scale)
+		new_h = int(vid_h * self.scale)
+		
+		# センタリング用のオフセット計算
+		self.offset_x = (self.canvas_w - new_w) // 2
+		self.offset_y = (self.canvas_h - new_h) // 2
+
+		# 画像リサイズ
+		disp_resized = cv2.resize(disp, (new_w, new_h))
+		disp_rgb = cv2.cvtColor(disp_resized, cv2.COLOR_BGR2RGB)
+		
+		img = Image.fromarray(disp_rgb)
 		self.photo = ImageTk.PhotoImage(img)
-		self.canvas.config(image=self.photo)
+		
+		# Canvasに描画 (前の画像を消してから描画)
+		self.canvas.delete("all")
+		self.canvas.create_image(self.offset_x, self.offset_y, image=self.photo, anchor=tk.NW)
+		# ---------------------------
+
 		if log_flag:
 			self.log(f'Showing frame {idx+1}/{self.frame_count}')
-		# update frame label if present
 		try:
 			self.frame_label.config(text=f'Frame: {idx+1}/{self.frame_count}')
 		except Exception:
 			pass
+
 
 	def draw_overlays(self, img, idx):
 		# draw calibration points in red (optional)
@@ -236,11 +284,29 @@ class ClickGUI:
 	def on_canvas_click(self, event):
 		if self.current_image is None:
 			return
-		# get click coords relative to image
-		x = event.x
-		y = event.y
-		# Label widget reports coords relative to widget size; image may be same size, assume same
+		
+		# --- 座標変換処理 ---
+		screen_x = event.x
+		screen_y = event.y
+
+		# 画面座標 -> 元の動画座標への逆変換
+		# (画面座標 - 余白) / 倍率 = 元の座標
+		original_x = (screen_x - self.offset_x) / self.scale
+		original_y = (screen_y - self.offset_y) / self.scale
+
+		# 動画の範囲内かチェック
+		img_h, img_w = self.current_image.shape[:2]
+		if not (0 <= original_x < img_w and 0 <= original_y < img_h):
+			# 黒帯部分をクリックした場合は無視
+			return
+
+		# 後続の処理のために x, y を上書き
+		x = original_x
+		y = original_y
+		# ------------------
+
 		self.log(f'Clicked at image coords ({x:.1f}, {y:.1f}) in mode {self.mode}')
+		
 		if self.mode == self.MODE_NONE:
 			messagebox.showwarning('Warning', 'Click ignored: select a mode first')
 			return
@@ -445,6 +511,7 @@ class ClickGUI:
 			'- Add (a): click to add points; real coords computed if calibrated.\n'
 			'- Del (d): click near a point to delete it.\n'
 			'- Prev/Next (←/→ or Z/X): navigate frames.\n'
+			'- Settings (E): open settings dialog to adjust colors and sizes.\n'
 			'- Save (Ctrl+S): save coords to .mat (requires scipy) or .npz fallback.\n'
 		)
 		messagebox.showinfo('Help', txt)
