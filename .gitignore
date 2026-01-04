@@ -3,4 +3,7 @@ ref/
 dist/
 click_app/__pycache__/
 
+working_memo.md
+copy_for_release.py
+
 .venv/
