@@ -61,7 +61,36 @@ GUIの右上のボタンの内、ハイライトされているボタンが現�
 - h : ヘルプダイアログを表示
   
 
+### 結果(.mat ファイル)の可視化
+main.py で `plot_mat = True` とし、 `mat_path` に保存した .mat ファイルのパスを指定して実行すると、保存したデータを可視化できます。
 
+### 結果(.mat ファイル)の構造
+以下のように読み込んで、構造を確認できます。
+```python
+from scipy.io import loadmat
+
+matfilepath = './data/temp.mat'
+
+data = loadmat(matfilepath)
+craw = data.get('coords_raw', None)
+creal = data.get('coords_real', None)
+if craw is None or creal is None:
+    raise ValueError('Invalid .mat file: missing coords_raw or coords_real')
+
+coords_raw = craw[0]
+coords_real = creal[0]
+
+print(f'type(coords_real): {type(coords_real)}') # <class 'numpy.ndarray'>
+print(f'coords_real.shape: {coords_real.shape}') # (N_frames,)
+print(f'type(coords_real[0]): {type(coords_real[0])}') # <class 'numpy.ndarray'>
+print(f'coords_real[0].shape: {coords_real[0].shape}') # (N_clicked_points, 2)
+print(f'coords_real[0][0, :]: {coords_real[0][0, :]}') # [x, y] of the first clicked point in frame 0
+## (same for coords_raw)
+```
+
+- `coords_raw`: 各フレームでクリックされた画像上の座標を保存した numpy.ndarray （画面座標系なのでおそらく不要なデータ）。
+- `coords_real`: 各フレームでクリックされた実世界座標を保存した numpy.ndarray （こちらが欲しいデータのはず）。
+- `coords_real[i][j, :]` は `i` 番目のフレームで、 `j` 番目にクリックされた点の実世界座標 [x, y] の numpy.ndarray。
 
 
 
