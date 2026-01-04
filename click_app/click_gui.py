@@ -8,6 +8,7 @@ from tkinter import filedialog, simpledialog, messagebox, colorchooser
 from PIL import Image, ImageTk
 from scipy.io import savemat
 
+from . import __version__
 # Configuration constants (moved into ClickGUI as class attributes)
 
 
@@ -47,25 +48,31 @@ def load_click_mat(filepath):
 
 
 def plot_clicks_on_frame(coords, frame=0):
-    """
-    指定されたフレームのクリック点を表示する関数
-    coords_raw: クリック点のリスト [[x1, y1], [x2, y2], ...]
-    """
-    if frame < 0 or frame >= len(coords):
-        raise ValueError('Invalid frame index')
-    
-    points = coords[frame]
-    x_vals = points[:, 0]
-    y_vals = points[:, 1]
+	"""
+	指定されたフレームのクリック点を表示する関数
+	coords_raw: クリック点のリスト [[x1, y1], [x2, y2], ...]
+	"""
+	if frame < 0 or frame >= len(coords):
+		# raise ValueError('Invalid frame index')
+		print('Invalid frame index')
+		return
 
-    plt.figure()
-    plt.scatter(x_vals, y_vals, c='red', marker='o')
-    plt.title('Click Points on Frame')
-    plt.xlabel('X Coordinate')
-    plt.ylabel('Y Coordinate')
-    plt.grid()
-    plt.show()
+	points = coords[frame]
+	if len(points) == 0:
+		print('No points to plot on this frame.')
+		return
 	
+	x_vals = points[:, 0]
+	y_vals = points[:, 1]
+
+	plt.figure()
+	plt.scatter(x_vals, y_vals, c='red', marker='o')
+	plt.title('Click Points on Frame')
+	plt.xlabel('X Coordinate')
+	plt.ylabel('Y Coordinate')
+	plt.grid()
+	plt.show()
+
 
 class ClickGUI:
 	# Configuration constants (colors, radii, mode names) as class attributes
@@ -81,7 +88,7 @@ class ClickGUI:
 	SHOW_CALIB_POINT = True
 	def __init__(self, master=None, video_path=None):
 		self.master = master or tk.Tk()
-		self.master.title('Click GUI')
+		self.master.title(f'Click GUI ver{__version__}')
 
 		# top log
 		# top log (scrollable)

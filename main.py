@@ -9,6 +9,8 @@ if __name__ == "__main__":
 
     if not plot_mat:
         # run the click GUI
+        print('Click GUI version:', ca.__version__)
+        print('Starting Click GUI...')
         ca.run_gui()
     else:
         # plot from saved .mat file
