@@ -18,7 +18,7 @@ if __name__ == "__main__":
         coords_raw = out['coords_raw']
         coords_real = out['coords_real']
         while True:
-            frame_idx = int(input(f'Enter frame index (0 to {len(coords_real)-1}, -1 to exit): '))
+            frame_idx = int(input(f'Enter frame index (1 to {len(coords_real)}, -1 to exit): '))
             if frame_idx == -1:
                 break
-            ca.plot_clicks_on_frame(coords_real, frame_idx)
+            ca.plot_clicks_on_frame(coords_real, frame_idx-1)

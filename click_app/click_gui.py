@@ -198,8 +198,11 @@ class ClickGUI:
 		self.log_text.see('end')
 
 	def open_file(self):
-		path = filedialog.askopenfilename(filetypes=[('Video', '*.mp4;*.avi;*.mov;*.mkv'), ('All', '*.*')])
+		# default to last used directory or current working directory
+		initial = getattr(self, 'last_dir', os.getcwd())
+		path = filedialog.askopenfilename(initialdir=initial, filetypes=[('Video', '*.mp4;*.avi;*.mov;*.mkv'), ('All', '*.*')])
 		if path:
+			self.last_dir = os.path.dirname(path) or initial
 			self.log(f'Opening {path}')
 			self.load_video(path)
 
@@ -524,11 +527,14 @@ class ClickGUI:
 		self.show_frame(self.current_frame_idx, log_flag=True)
 
 	def save(self):
-		path = filedialog.asksaveasfilename(defaultextension='.mat', filetypes=[('MAT', '*.mat')])
+		# default to last used directory or current working directory
+		initial = getattr(self, 'last_dir', os.getcwd())
+		path = filedialog.asksaveasfilename(initialdir=initial, defaultextension='.mat', filetypes=[('MAT', '*.mat')])
 		if not path:
 			return
 		try:
 			savemat(path, {'coords_raw': np.array(self.coords_raw, dtype=object), 'coords_real': np.array(self.coords_real, dtype=object)})
+			self.last_dir = os.path.dirname(path) or initial
 			self.log(f'Saved .mat to {path}')
 		except Exception as e:
 			self.log(f'Error saving: {e}')
