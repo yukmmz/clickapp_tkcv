@@ -4,7 +4,7 @@
 ### 仮想環境構築
 おそらく python3.12 であればどのバージョンでも動作すると思います。動作確認は Python 3.12.10 で行っています。
 インストールされていない場合は、以下の手順でインストールしてください。
-1. Python 3.12.10 をインストール(https://www.python.org/downloads/release/python-31210/)。その際、"Add Python to PATH" にチェックを入れること。
+1. [Python 3.12.10](https://www.python.org/downloads/release/python-31210/) をインストール。その際、"Add Python to PATH" にチェックを入れること。
 1. コマンドプロンプト (Windows) または ターミナル (Mac) で、`python3.12 --version` を実行してもしバージョンが表示されない場合、python3.12の実行ファイル python.exe をコピペして、python3.12.exe にリネームする。  
    Windows の場合、C:\Users\<ユーザー名>\AppData\Local\Programs\Python\Python312 にあるはず。  
    Mac の場合、/usr/local/bin/python3.12 にあるはず。
