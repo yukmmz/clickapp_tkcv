@@ -84,8 +84,14 @@ class ClickGUI:
 		self.master.title('Click GUI')
 
 		# top log
-		self.log_text = tk.Text(self.master, height=6)
-		self.log_text.pack(fill='x')
+		# top log (scrollable)
+		log_frame = tk.Frame(self.master)
+		log_frame.pack(fill='x')
+		self.log_text = tk.Text(log_frame, height=8, wrap='none')
+		self.log_text.pack(side='left', fill='x', expand=True)
+		scrollbar = tk.Scrollbar(log_frame, orient='vertical', command=self.log_text.yview)
+		scrollbar.pack(side='right', fill='y')
+		self.log_text.config(yscrollcommand=scrollbar.set)
 
 		# toolbar
 		toolbar = tk.Frame(self.master)

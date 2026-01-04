@@ -1,44 +1,46 @@
 
-
-
-
-
-
 ## 使い方
 
 ### 仮想環境構築
-基本的に一度だけで良い。
-- Windows  
-    build.bat をダブルクリックして実行する。
-- Mac  
-    ターミナルで`chmod +x build.command`を実行して実行権限を与えてから、build.command をダブルクリックして実行する。
+1. Python 3.12.10 をインストール(https://www.python.org/downloads/release/python-31210/)。その際、"Add Python to PATH" にチェックを入れること。
+2. コマンドプロンプト (Windows) または ターミナル (Mac) で、`python3.12 --version` を実行してもしバージョンが表示されない場合、python3.12の実行ファイル python.exe をコピペして、python3.12.exe にリネームする。  
+   Windows の場合、C:\Users\<ユーザー名>\AppData\Local\Programs\Python\Python312 にあるはず。  
+   Mac の場合、/usr/local/bin/python3.12 にあるはず。
+4. bat ファイル (Windows) または command ファイル (Mac) をダブルクリックして実行し、仮想環境を構築する。  
+   - Windows  
+       build.bat をダブルクリックして実行する。
+   - Mac  
+       1. ターミナルで`chmod +x build.command`を実行して実行権限を与える。
+       2. build.command をダブルクリックして実行する。
+
 
 ### GUIの起動
 - Windows  
     run.bat をダブルクリックして実行する。
-- Mac  
+- Mac    
     1. 一度だけ、ターミナルで`chmod +x run.command`を実行して実行権限を与える。
     2. run.command をダブルクリックして実行する。
 
+
 ### GUIの使い方
-3つのモードがある。GUIの右上のボタンの内、ハイライトされているボタンが現在のモードを示す。
+**3つのモード**  
+GUIの右上のボタンの内、ハイライトされているボタンが現在のモードを示す。
 - Calibration mode  
     画像上の2点をクリックして、対応する実世界座標を入力することで、画像座標と実世界座標の対応関係を設定するモード。C ボタンを押して入る。キャリブレーションが完了すると自動的に Add modeに入る。
 - Add mode  
     各フレームで任意の点をクリックして、クリックされた点の画面上の座標と実世界座標を保存するモード。
 - Delete mode  
     各フレームで任意の点をクリックして、クリックされた点に最も近い点を削除するモード。
-
-作業フロー
+<!--  -->
+**作業フロー**
 1. Ctrl+o で該当の動画ファイルを選択
 2. （自動的に Calibration mode に入る。）
 3. キャリブレーション点をクリックして、ポップアップに実世界座標を入力。これを2点繰り返す。x,y 座標が異なる2点を選ぶこと。
 4. （自動的に Add mode に入る。）
 5. 各フレームで任意の点をクリックして追加。消したい点があれば Delete mode に入り、該当の点をクリックして削除。
 
-Settings ボタンを押すと、
 
-ショートカットキー
+**ショートカットキー**
 - Ctrl+o : 動画ファイルを開く
 - Ctrl+s : データを保存
 - → or X : 次のフレームへ
