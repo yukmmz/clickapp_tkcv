@@ -1,5 +1,6 @@
 data/
 ref/
+dist/
 click_app/__pycache__/
 
 .venv/
